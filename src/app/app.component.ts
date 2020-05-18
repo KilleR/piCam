@@ -1,6 +1,6 @@
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
-import {Subject} from 'rxjs';
+import {BehaviorSubject, Subject} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -11,11 +11,13 @@ import {Subject} from 'rxjs';
 export class AppComponent implements OnInit {
   title = 'picSlice';
 
-  totalSlices = 24 * 4;
+
   sliceCount: number;
 
-  start = 4 * 4;
-  end = 22 * 4;
+  sliceDensity = 4;
+  totalSlices = 24 * this.sliceDensity;
+  start = 0 * this.sliceDensity;
+  length = 24 * this.sliceDensity;
 
   hours$ = new Subject<string[]>();
   preLoadDone$ = new Subject();
@@ -23,7 +25,7 @@ export class AppComponent implements OnInit {
   controls: FormGroup;
   preloadSrc: string;
   preloadCount: number;
-  preloadCurrent$ = new Subject<number>();
+  preloadImages$ = new BehaviorSubject<string[]>([]);
 
   constructor(private fb: FormBuilder) {
   }
@@ -32,7 +34,7 @@ export class AppComponent implements OnInit {
 
     this.controls = this.fb.group({
       start: [this.start],
-      end: [this.end]
+      length: [this.length]
     });
 
     this.doImagePrecache();
@@ -43,24 +45,22 @@ export class AppComponent implements OnInit {
   onChanges() {
     this.controls.valueChanges.subscribe(res => {
       this.start = res.start;
-      this.end = res.end;
+      this.length = res.length;
       this.buildSlices();
     });
   }
 
   doImagePrecache() {
     const preloadHours = Array(this.totalSlices).fill(0).map((x, i) => {
-      return Math.floor(i / 4) + '_' + i % 4 * 15;
+      return Math.floor(i / this.sliceDensity) + '_' + i % this.sliceDensity * 15;
     });
     this.preloadCount = this.preloadCount = preloadHours.length;
-    this.preloadCurrent$.next(0);
-    this.preloadSrc = 'assets/cam_' + preloadHours.pop() + '.jpg';
+    this.addImagePreload('assets/cam_' + preloadHours.pop() + '.jpg');
 
     this.preLoadDone$.subscribe({
       next: () => {
         if (preloadHours.length) {
-          this.preloadSrc = 'assets/cam_' + preloadHours.pop() + '.jpg';
-          this.preloadCurrent$.next(this.preloadCount - preloadHours.length);
+          this.addImagePreload('assets/cam_' + preloadHours.pop() + '.jpg');
         } else {
           this.preLoadDone$.complete();
         }
@@ -72,20 +72,24 @@ export class AppComponent implements OnInit {
   }
 
   buildSlices() {
-    this.sliceCount = this.end - this.start;
+    this.sliceCount = this.length;
     console.log(this.sliceCount);
     this.hours$.next(Array(this.sliceCount).fill(0).map((x, i) => {
       i = (i + this.start) % this.totalSlices;
-      return Math.floor(i / 4) + '_' + i % 4 * 15;
+      return Math.floor(i / this.sliceDensity) + '_' + i % this.sliceDensity * 15;
     }));
   }
 
-  trackByHour(index: number, hour: string) {
+  trackByStringArray(index: number, hour: string) {
     return hour;
   }
 
   onBgLoad() {
     console.log('done loading');
     this.preLoadDone$.next();
+  }
+
+  private addImagePreload(src: string) {
+    this.preloadImages$.next([...this.preloadImages$.value, src]);
   }
 }

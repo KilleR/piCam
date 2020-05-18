@@ -1,19 +1,29 @@
-<img [src]="preloadSrc"
-     style="display: none"
-     (load)="onBgLoad()"
-/>
+<div *ngIf="(preloadImages$ | async) as sources">
+  <img *ngFor="let source of sources; trackBy: trackByStringArray"
+       [src]="source"
+       style="display: none"
+       (load)="onBgLoad()"
+  />
+</div>
 <div *ngIf="(hours$ | async) as hours; else loading"
      class="picFrame"
 >
-  <div *ngFor="let hour of hours; index as i; trackBy: trackByHour"
+  <!--    <div *ngFor="let hour of hours; index as i; trackBy: trackByStringArray"-->
+  <!--         class="slice"-->
+  <!--         [style.background-image]="'url(\'assets/cam_'+hour+'.jpg\')'"-->
+  <!--         [style.background-size]="'1024px 768px'"-->
+  <!--         [style.background-position.px]="-1024/sliceCount*i"-->
+  <!--         [style.width.px]="1024 / sliceCount"-->
+  <!--    >-->
+  <!--      &nbsp;-->
+  <!--    </div>-->
+  <img *ngFor="let hour of hours; index as i; trackBy: trackByStringArray"
        class="slice"
-       [style.background-image]="'url(\'assets/cam_'+hour+'.jpg\')'"
-       [style.background-size]="'1024px 768px'"
-       [style.width.px]="1024 / sliceCount"
+       [src]="'assets/cam_'+hour+'.jpg'"
+       [style.position]="'absolute'"
+       [style.clip]="'rect(0px ' + (i+1) * 1024/sliceCount + 'px 768px ' + (i) * 1024/sliceCount+'px)'"
        (load)="onBgLoad()"
-  >
-    &nbsp;
-  </div>
+  />
 
   <form [formGroup]="controls">
     <input type="number"
@@ -24,5 +34,5 @@
 </div>
 
 <ng-template #loading>
-  Loading ( {{preloadCurrent$ | async}} of {{preloadCount}} )...
+  Loading ( {{preloadImages$.value.length}} of {{preloadCount}} )...
 </ng-template>
