@@ -1,11 +1,28 @@
-<div class="picFrame">
-  <div *ngFor="let i of numbers"
+<img [src]="preloadSrc"
+     style="display: none"
+     (load)="onBgLoad()"
+/>
+<div *ngIf="(hours$ | async) as hours; else loading"
+     class="picFrame"
+>
+  <div *ngFor="let hour of hours; index as i; trackBy: trackByHour"
        class="slice"
-       [style.background-image]="'url(\'assets/cam_'+i+'.jpg\')'"
+       [style.background-image]="'url(\'assets/cam_'+hour+'.jpg\')'"
        [style.background-size]="'1024px 768px'"
-       [style.background-position.px]="-1024/24*i"
-       [style.left.px]="1024/24*i"
+       [style.width.px]="1024 / sliceCount"
+       (load)="onBgLoad()"
   >
     &nbsp;
   </div>
+
+  <form [formGroup]="controls">
+    <input type="number"
+           class="picTime"
+           formControlName="start"
+    />
+  </form>
 </div>
+
+<ng-template #loading>
+  Loading ( {{preloadCurrent$ | async}} of {{preloadCount}} )...
+</ng-template>
