@@ -1,12 +1,12 @@
-import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup} from '@angular/forms';
 import {BehaviorSubject, Subject} from 'rxjs';
+import {delay} from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
   title = 'picSlice';
@@ -44,11 +44,20 @@ export class AppComponent implements OnInit {
 
   onChanges() {
     this.controls.valueChanges.subscribe(res => {
-      this.start = res.start;
+      let cycleStart = res.start % this.sliceCount;
+      if (cycleStart < 0) {
+        cycleStart += this.sliceCount;
+      }
+      this.start = this.sliceCount - cycleStart;
       this.length = res.length;
       this.buildSlices();
     });
   }
+
+  onSliderChange(evt) {
+    console.log('slider change', evt);
+  }
+
 
   doImagePrecache() {
     const preloadHours = Array(this.totalSlices).fill(0).map((x, i) => {
@@ -57,7 +66,7 @@ export class AppComponent implements OnInit {
     this.preloadCount = this.preloadCount = preloadHours.length;
     this.addImagePreload('assets/cam_' + preloadHours.pop() + '.jpg');
 
-    this.preLoadDone$.subscribe({
+    this.preLoadDone$.pipe(delay(1)).subscribe({
       next: () => {
         if (preloadHours.length) {
           this.addImagePreload('assets/cam_' + preloadHours.pop() + '.jpg');
@@ -73,11 +82,14 @@ export class AppComponent implements OnInit {
 
   buildSlices() {
     this.sliceCount = this.length;
-    console.log(this.sliceCount);
     this.hours$.next(Array(this.sliceCount).fill(0).map((x, i) => {
       i = (i + this.start) % this.totalSlices;
       return Math.floor(i / this.sliceDensity) + '_' + i % this.sliceDensity * 15;
     }));
+  }
+
+  tickToHour(tick: number) {
+    return Math.floor(tick / 4) + ':' + tick % 4 * 15;
   }
 
   trackByStringArray(index: number, hour: string) {

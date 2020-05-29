@@ -8,31 +8,41 @@
 <div *ngIf="(hours$ | async) as hours; else loading"
      class="picFrame"
 >
-  <!--    <div *ngFor="let hour of hours; index as i; trackBy: trackByStringArray"-->
-  <!--         class="slice"-->
-  <!--         [style.background-image]="'url(\'assets/cam_'+hour+'.jpg\')'"-->
-  <!--         [style.background-size]="'1024px 768px'"-->
-  <!--         [style.background-position.px]="-1024/sliceCount*i"-->
-  <!--         [style.width.px]="1024 / sliceCount"-->
-  <!--    >-->
-  <!--      &nbsp;-->
-  <!--    </div>-->
   <img *ngFor="let hour of hours; index as i; trackBy: trackByStringArray"
        class="slice"
        [src]="'assets/cam_'+hour+'.jpg'"
+       [alt]="hour"
+       [title]="hour"
        [style.position]="'absolute'"
        [style.clip]="'rect(0px ' + (i+1) * 1024/sliceCount + 'px 768px ' + (i) * 1024/sliceCount+'px)'"
        (load)="onBgLoad()"
   />
 
-  <form [formGroup]="controls">
-    <input type="number"
-           class="picTime"
-           formControlName="start"
-    />
-  </form>
+  <div class="absolute-center" style="align-items: flex-end">
+    <form [formGroup]="controls">
+      <!--      <input type="number"-->
+      <!--             class="picTime"-->
+      <!--             formControlName="start"-->
+      <!--      />-->
+      <mat-slider
+        class="controls"
+        formControlName="start"
+        [max]="totalSlices"
+        (valueChange)="onSliderChange($event)"
+        tickInterval="4"
+      ></mat-slider>
+    </form>
+  </div>
 </div>
 
 <ng-template #loading>
-  Loading ( {{preloadImages$.value.length}} of {{preloadCount}} )...
+  <div class="absolute-center inset-0">
+    <div>
+      <div>Loading Images ( {{preloadImages$.value.length}} of {{preloadCount}} )...</div>
+      <mat-progress-spinner
+        style="margin:auto"
+        mode="determinate"
+        [value]="(preloadImages$.value.length / preloadCount) * 100"></mat-progress-spinner>
+    </div>
+  </div>
 </ng-template>

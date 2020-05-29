@@ -1,8 +1,12 @@
-import { BrowserModule } from '@angular/platform-browser';
+import {BrowserModule, HammerModule} from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import {ReactiveFormsModule} from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatSliderModule} from '@angular/material/slider';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
@@ -10,7 +14,12 @@ import {ReactiveFormsModule} from '@angular/forms';
   ],
   imports: [
     BrowserModule,
-    ReactiveFormsModule
+    HammerModule,
+    ReactiveFormsModule,
+    BrowserAnimationsModule,
+    MatProgressBarModule,
+    MatSliderModule,
+    MatProgressSpinnerModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
